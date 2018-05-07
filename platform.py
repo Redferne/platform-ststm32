@@ -15,7 +15,7 @@
 from platformio.managers.platform import PlatformBase
 
 
-class Ststm32Platform(PlatformBase):
+class Corestm32Platform(PlatformBase):
 
     def configure_default_packages(self, variables, targets):
         board = variables.get("board")
