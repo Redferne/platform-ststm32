@@ -42,6 +42,16 @@ env.Replace(
     PROGSUFFIX=".elf"
 )
 
+<<<<<<< HEAD
+=======
+if env.BoardConfig().get("build.f_cpu", "") != "":
+    env.Replace(
+        CPPDEFINES=[
+            ("F_CPU", "$BOARD_F_CPU")
+        ],
+    )
+
+>>>>>>> Testing Arduino Core STM32 on L476
 # Allow user to override via pre:script
 if env.get("PROGNAME", "program") == "program":
     env.Replace(PROGNAME="firmware")
