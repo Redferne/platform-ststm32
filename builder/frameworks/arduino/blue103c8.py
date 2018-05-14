@@ -37,19 +37,19 @@ CMSIS_DIR = platform.get_package_dir("framework-cmsis")
 assert isdir(FRAMEWORK_DIR)
 assert isdir(CMSIS_DIR)
 
+#print env.Dump()
+#print "******************** BUILD VARIANT: " + env.BoardConfig().get("build.variant")
+
 # remap board configuration values
 # Nucleo_64.menu.pnum.NUCLEO_L476RG.build.mcu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 mcu_type = board.get("build.mcu")[:-2]
-if "stm32l476rg" in mcu_type:
+if "stm32f103c8" in mcu_type:
     ldscript = "ldscript.ld"
-#    variant = "Nucleo_64"
-    variant = "NUCLEO_L476RG"
+    variant = "BLUEPILL_F103C8"
 
 upload_protocol = env.subst("$UPLOAD_PROTOCOL")
 
 env.Append(
-    ASFLAGS=["-x", "assembler-with-cpp"],
-
     CFLAGS=[
         "-std=gnu11"
     ],
@@ -57,31 +57,21 @@ env.Append(
     CCFLAGS=[
         "-MMD",
         "--param",
-        "max-inline-insns-single=500",
-        "-march=armv7-m",
-        "-Os",  # optimize for size
-        "-ffunction-sections",  # place each function in its own section
-        "-fdata-sections",
-        "-Wall",
-        "-mthumb",
-        "-nostdlib",
-        "-mcpu=%s" % env.BoardConfig().get("build.cpu")
+        "max-inline-insns-single=500"
     ],
 
     CXXFLAGS=[
-        "-std=gnu++11",
-        "-fno-rtti",
-        "-fno-exceptions"
+        "-std=gnu++14"
     ],
 
     CPPDEFINES=[
-        ("ARDUINO_%s" % variant.upper()),
         ("DEBUG_LEVEL", "DEBUG_NONE"),
-        ("ARDUINO_ARCH_STM32"),
-        ("STM32L476xx"),
-        ("STM32L4xx"),
         ("BOARD_%s" % variant),
         ("ARDUINO", 10805),
+        ("ARDUINO_%s" % variant.upper()),
+        ("ARDUINO_ARCH_STM32"),
+        ("STM32F103xx"),
+        ("STM32F1xx"),
         ("MCU_%s" % mcu_type.upper()),
         ("SERIAL_USB") # this is so that usb serial is connected when the board boots, use USB_MSC for having USB Mass Storage (MSC) instead
     ],
@@ -90,29 +80,19 @@ env.Append(
         join(FRAMEWORK_DIR, "cores", "arduino"),
         join(FRAMEWORK_DIR, "cores", "arduino", "avr"),
         join(FRAMEWORK_DIR, "cores", "arduino", "stm32"),
-        join(FRAMEWORK_DIR, "system", "Drivers", "STM32L4xx_HAL_Driver", "Inc"),
-        join(FRAMEWORK_DIR, "system", "Drivers", "STM32L4xx_HAL_Driver", "Src"),
-        join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32L4xx", "Include"),
-        join(FRAMEWORK_DIR, "system", "STM32L4xx"),
-        join(FRAMEWORK_DIR, "variants", "NUCLEO_L476RG"),
+        join(FRAMEWORK_DIR, "system", "Drivers", "STM32F1xx_HAL_Driver", "Inc"),
+        join(FRAMEWORK_DIR, "system", "Drivers", "STM32F1xx_HAL_Driver", "Src"),
+        join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32F1xx", "Include"),
+        join(FRAMEWORK_DIR, "system", "STM32F1xx"),
+        join(FRAMEWORK_DIR, "variants", "BLUEPILL_F103C8"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Core", "Inc"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Core", "Src"),
     ],
 
-    LINKFLAGS=[
-        "-Os",
-        "-Wl,--gc-sections,--relax",
-        "-mthumb",
-        "-mcpu=%s" % env.BoardConfig().get("build.cpu")
-    ],
-
     LIBPATH=[join(FRAMEWORK_DIR, "variants", variant)],
 
-    LIBS=["c", "gcc", "m"]
+    LIBS=["c"]
 )
-
-# copy CCFLAGS to ASFLAGS (-x assembler-with-cpp mode)
-env.Append(ASFLAGS=env.get("CCFLAGS", [])[:])
 
 # remap ldscript
 env.Replace(LDSCRIPT_PATH=ldscript)
@@ -128,14 +108,14 @@ env.Replace(LDSCRIPT_PATH=ldscript)
 #    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FUCKER FOUND"
 
 # remove unused linker flags
-#for item in ("-nostartfiles", "-nostdlib"):
-#    if item in env['LINKFLAGS']:
-#        env['LINKFLAGS'].remove(item)
+for item in ("-nostartfiles", "-nostdlib"):
+    if item in env['LINKFLAGS']:
+        env['LINKFLAGS'].remove(item)
 
 # remove unused libraries
-#for item in ("stdc++", "nosys"):
-#    if item in env['LIBS']:
-#        env['LIBS'].remove(item)
+for item in ("stdc++", "nosys"):
+    if item in env['LIBS']:
+        env['LIBS'].remove(item)
 
 #
 # Lookup for specific core's libraries
@@ -143,7 +123,7 @@ env.Replace(LDSCRIPT_PATH=ldscript)
 
 env.Append(
     LIBSOURCE_DIRS=[
-#        join(FRAMEWORK_DIR, "libraries", "__cores__", "maple"),
+        join(FRAMEWORK_DIR, "libraries", "__cores__", "maple"),
         join(FRAMEWORK_DIR, "libraries")
     ]
 )
@@ -159,7 +139,7 @@ if "build.variant" in board:
         CPPPATH=[
             join(FRAMEWORK_DIR, "variants", variant),
             join(CMSIS_DIR, "cores", "stm32"),
-            join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32L4xx", "Source", "Templates", "gcc" ),
+            join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32F1xx", "Source", "Templates", "gcc" ),
         ]
     )
     libs.append(env.BuildLibrary(
@@ -172,6 +152,6 @@ libs.append(env.BuildLibrary(
     join(FRAMEWORK_DIR, "cores", "arduino")
 ))
 
-#print "******************** BUILD VARIANT: " + str(libs)
+print "******************** BUILD VARIANT: " + str(libs)
 
 env.Prepend(LIBS=libs)

@@ -32,3 +32,5 @@ elif "stm32f4" in env.BoardConfig().get("build.variant"):
     env.SConscript("maple/stm32f4.py")
 elif "stm32lx" in env.BoardConfig().get("build.variant"):
     env.SConscript("stm32lx.py")
+elif "blue103c8" in env.BoardConfig().get("build.variant"):
+    env.SConscript("blue103c8.py")
