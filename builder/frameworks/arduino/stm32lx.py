@@ -32,26 +32,40 @@ board = env.BoardConfig()
 
 FRAMEWORK_DIR = platform.get_package_dir("framework-arduinocorestm32")
 CMSIS_DIR = platform.get_package_dir("framework-cmsis")
+#MBED_DIR = platform.get_package_dir("framework-mbed")
 
 #FRAMEWORK_VERSION = platform.get_package_version("framework-arduinocorestm32")
 assert isdir(FRAMEWORK_DIR)
 assert isdir(CMSIS_DIR)
+#assert isdir(MBED_DIR)
 
 # remap board configuration values
-# Nucleo_64.menu.pnum.NUCLEO_L476RG.build.mcu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+# build.mcu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 mcu_type = board.get("build.mcu")[:-2]
 if "stm32l476rg" in mcu_type:
     ldscript = "ldscript.ld"
-#    variant = "Nucleo_64"
-    variant = "NUCLEO_L476RG"
+    variant = "ESSB_L476RG"
 
 upload_protocol = env.subst("$UPLOAD_PROTOCOL")
+
+vector_offset = 0x0
+
+if upload_protocol == "dfu":
+    vector_offset = 0xc000
+    ldscript = "ldscript_dfu.ld"
 
 env.Append(
     ASFLAGS=["-x", "assembler-with-cpp"],
 
     CFLAGS=[
-        "-std=gnu11"
+        "-MMD",
+        "-std=gnu11",
+#        "-Dprintf=iprintf",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-nostdlib",
+        "--param",
+        "max-inline-insns-single=500",
     ],
 
     CCFLAGS=[
@@ -94,10 +108,16 @@ env.Append(
         join(FRAMEWORK_DIR, "system", "Drivers", "STM32L4xx_HAL_Driver", "Src"),
         join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32L4xx", "Include"),
         join(FRAMEWORK_DIR, "system", "STM32L4xx"),
-        join(FRAMEWORK_DIR, "variants", "NUCLEO_L476RG"),
+        join(FRAMEWORK_DIR, "variants", variant),
+        join(FRAMEWORK_DIR, "variants", variant, "usb"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Core", "Inc"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Core", "Src"),
-    ],
+        join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Class", "CDC", "Inc"),
+        join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Class", "CDC", "Src"),
+        join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32L4xx", "Source", "Templates", "gcc" ),
+        join(CMSIS_DIR, "cores", "stm32"),
+#        join(MBED_DIR, "features", "unsupported", "dsp", "cmsis_dsp")
+   ],
 
     LINKFLAGS=[
         "-Os",
@@ -144,7 +164,7 @@ env.Replace(LDSCRIPT_PATH=ldscript)
 env.Append(
     LIBSOURCE_DIRS=[
 #        join(FRAMEWORK_DIR, "libraries", "__cores__", "maple"),
-        join(FRAMEWORK_DIR, "libraries")
+        join(FRAMEWORK_DIR, "libraries"),
     ]
 )
 
@@ -155,13 +175,6 @@ env.Append(
 libs = []
 
 if "build.variant" in board:
-    env.Append(
-        CPPPATH=[
-            join(FRAMEWORK_DIR, "variants", variant),
-            join(CMSIS_DIR, "cores", "stm32"),
-            join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32L4xx", "Source", "Templates", "gcc" ),
-        ]
-    )
     libs.append(env.BuildLibrary(
         join("$BUILD_DIR", "FrameworkArduinoVariant"),
         join(FRAMEWORK_DIR, "variants", variant)
@@ -172,6 +185,9 @@ libs.append(env.BuildLibrary(
     join(FRAMEWORK_DIR, "cores", "arduino")
 ))
 
-#print "******************** BUILD VARIANT: " + str(libs)
+#libs.append(env.BuildLibrary(
+#    join("$BUILD_DIR", "CMSIS_Dsp"),
+#    join(MBED_DIR, "features", "unsupported", "dsp", "cmsis_dsp")
+#))
 
 env.Prepend(LIBS=libs)

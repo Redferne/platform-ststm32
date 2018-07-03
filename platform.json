@@ -1,12 +1,12 @@
 {
   "name": "corestm32",
-  "title": "CORE STM32",
+  "title": "THE CORE STM32",
   "description": "The STM32 family of 32-bit Flash MCUs based on the ARM Cortex-M processor is designed to offer new degrees of freedom to MCU users. It offers a 32-bit product range that combines very high performance, real-time capabilities, digital signal processing, and low-power, low-voltage operation, while maintaining full integration and ease of development.",
   "url": "http://www.st.com/web/en/catalog/mmc/FM141/SC1169?sc=stm32",
   "homepage": "http://platformio.org/platforms/ststm32",
   "license": "Apache-2.0",
   "engines": {
-    "platformio": "^3.0.0"
+    "platformio": "^3.5.0"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,13 @@
           "type": "git",
           "url": "https://github.com/Redferne/Arduino_Core_STM32.git",
           "system": "*"
+        }
+      ],
+      "framework-cmsis5": [
+        {
+          "url": "https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/tools/CMSIS-5.3.0.tar.bz2",
+          "system": "*",
+          "version": "5.3.0"
         }
       ]
     }
@@ -44,7 +51,7 @@
       "script": "builder/frameworks/libopencm3/libopencm3.py"
     },
     "arduino": {
-      "package": "framework-arduinoststm32",
+      "package": "framework-arduinocorestm32",
       "script": "builder/frameworks/arduino/stm32duino.py"
     },
     "stm32cube": {
@@ -59,7 +66,7 @@
     },
     "framework-mbed": {
       "type": "framework",
-      "optional": true,
+      "optional": false,
       "version": "~4.50806.0"
     },
     "framework-cmsis": {
@@ -76,11 +83,6 @@
       "type": "framework",
       "optional": true,
       "version": "~1.1.0"
-    },
-    "framework-arduinoststm32": {
-      "type": "framework",
-      "optional": true,
-      "version": "~2.1.0"
     },
     "framework-arduinocorestm32": {
       "type": "framework",
