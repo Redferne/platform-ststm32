@@ -60,7 +60,6 @@ env.Append(
     CFLAGS=[
         "-MMD",
         "-std=gnu11",
-#        "-Dprintf=iprintf",
         "-ffunction-sections",
         "-fdata-sections",
         "-nostdlib",
@@ -72,7 +71,6 @@ env.Append(
         "-MMD",
         "--param",
         "max-inline-insns-single=500",
-        "-march=armv7-m",
         "-Os",  # optimize for size
         "-ffunction-sections",  # place each function in its own section
         "-fdata-sections",
@@ -83,7 +81,7 @@ env.Append(
     ],
 
     CXXFLAGS=[
-        "-std=gnu++11",
+        "-std=gnu++14",
         "-fno-rtti",
         "-fno-exceptions"
     ],
@@ -97,6 +95,7 @@ env.Append(
         ("BOARD_%s" % variant),
         ("ARDUINO", 10805),
         ("MCU_%s" % mcu_type.upper()),
+        ("F_CPU", "$BOARD_F_CPU"),
         ("SERIAL_USB") # this is so that usb serial is connected when the board boots, use USB_MSC for having USB Mass Storage (MSC) instead
     ],
 
@@ -123,12 +122,15 @@ env.Append(
         "-Os",
         "-Wl,--gc-sections,--relax",
         "-mthumb",
+        "-nostartfiles",
+        "-nostdlib",
+        "-specs=nosys.specs",
         "-mcpu=%s" % env.BoardConfig().get("build.cpu")
     ],
 
     LIBPATH=[join(FRAMEWORK_DIR, "variants", variant)],
 
-    LIBS=["c", "gcc", "m"]
+    LIBS=["c"]
 )
 
 # copy CCFLAGS to ASFLAGS (-x assembler-with-cpp mode)
@@ -137,25 +139,15 @@ env.Append(ASFLAGS=env.get("CCFLAGS", [])[:])
 # remap ldscript
 env.Replace(LDSCRIPT_PATH=ldscript)
 
-#env.ProcessUnFlags("F_CPU")
-
-#print env.Dump()
-
-# F_CPU
-#item = "('F_CPU', '$BOARD_F_CPU')"
-#if item in env['CPPDEFINES']:
-#    env['CPPDEFINES'].remove(item)
-#    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FUCKER FOUND"
-
 # remove unused linker flags
-#for item in ("-nostartfiles", "-nostdlib"):
-#    if item in env['LINKFLAGS']:
-#        env['LINKFLAGS'].remove(item)
+for item in ("-nostartfiles", "-nostdlib"):
+    if item in env['LINKFLAGS']:
+        env['LINKFLAGS'].remove(item)
 
 # remove unused libraries
-#for item in ("stdc++", "nosys"):
-#    if item in env['LIBS']:
-#        env['LIBS'].remove(item)
+for item in ("stdc++", "nosys"):
+    if item in env['LIBS']:
+        env['LIBS'].remove(item)
 
 #
 # Lookup for specific core's libraries
