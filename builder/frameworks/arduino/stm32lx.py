@@ -92,6 +92,7 @@ env.Append(
         ("ARDUINO_ARCH_STM32"),
         ("STM32L476xx"),
         ("STM32L4xx"),
+        ("VECT_TAB_OFFSET", vector_offset),
         ("BOARD_%s" % variant),
         ("ARDUINO", 10805),
         ("MCU_%s" % mcu_type.upper()),
