@@ -49,19 +49,43 @@ if "stm32f103c8" in mcu_type:
 
 upload_protocol = env.subst("$UPLOAD_PROTOCOL")
 
+# -mcpu=cortex-m3 -mthumb -mno-thumb-interwork -mfpu=vfp -msoft-float -mfix-cortex-m3-ldrd
+
 env.Append(
+    ASFLAGS=["-x", "assembler-with-cpp"],
+
     CFLAGS=[
-        "-std=gnu11"
+        "-MMD",
+        "-std=gnu11",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-nostdlib",
+        "--param",
+        "max-inline-insns-single=500",
+#        "-std=gnu11"
     ],
 
     CCFLAGS=[
+#        "-MMD",
+#        "--param",
+#        "max-inline-insns-single=500"
         "-MMD",
         "--param",
-        "max-inline-insns-single=500"
+        "max-inline-insns-single=500",
+        "-Os",  # optimize for size
+        "-ffunction-sections",  # place each function in its own section
+        "-fdata-sections",
+        "-Wall",
+        "-mthumb",
+        "-nostdlib",
+        "-mcpu=%s" % env.BoardConfig().get("build.cpu")
     ],
 
     CXXFLAGS=[
-        "-std=gnu++14"
+        "-std=gnu++14",
+        "-fno-rtti",
+        "-fno-exceptions"
+#        "-std=gnu++14"
     ],
 
     CPPDEFINES=[
@@ -73,6 +97,7 @@ env.Append(
         ("STM32F103xx"),
         ("STM32F1xx"),
         ("MCU_%s" % mcu_type.upper()),
+        ("F_CPU", "$BOARD_F_CPU"),
         ("SERIAL_USB") # this is so that usb serial is connected when the board boots, use USB_MSC for having USB Mass Storage (MSC) instead
     ],
 
@@ -87,6 +112,18 @@ env.Append(
         join(FRAMEWORK_DIR, "variants", "BLUEPILL_F103C8"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Core", "Inc"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Core", "Src"),
+        join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32F1xx", "Source", "Templates", "gcc" ),
+        join(CMSIS_DIR, "cores", "stm32"),
+    ],
+
+    LINKFLAGS=[
+        "-Os",
+        "-Wl,--gc-sections,--relax",
+        "-mthumb",
+        "-nostartfiles",
+        "-nostdlib",
+        "-specs=nosys.specs",
+        "-mcpu=%s" % env.BoardConfig().get("build.cpu")
     ],
 
     LIBPATH=[join(FRAMEWORK_DIR, "variants", variant)],
@@ -94,18 +131,11 @@ env.Append(
     LIBS=["c"]
 )
 
+# copy CCFLAGS to ASFLAGS (-x assembler-with-cpp mode)
+env.Append(ASFLAGS=env.get("CCFLAGS", [])[:])
+
 # remap ldscript
 env.Replace(LDSCRIPT_PATH=ldscript)
-
-#env.ProcessUnFlags("F_CPU")
-
-#print env.Dump()
-
-# F_CPU
-#item = "('F_CPU', '$BOARD_F_CPU')"
-#if item in env['CPPDEFINES']:
-#    env['CPPDEFINES'].remove(item)
-#    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FUCKER FOUND"
 
 # remove unused linker flags
 for item in ("-nostartfiles", "-nostdlib"):
@@ -123,8 +153,8 @@ for item in ("stdc++", "nosys"):
 
 env.Append(
     LIBSOURCE_DIRS=[
-        join(FRAMEWORK_DIR, "libraries", "__cores__", "maple"),
-        join(FRAMEWORK_DIR, "libraries")
+#        join(FRAMEWORK_DIR, "libraries", "__cores__", "maple"),
+        join(FRAMEWORK_DIR, "libraries"),
     ]
 )
 
@@ -135,13 +165,6 @@ env.Append(
 libs = []
 
 if "build.variant" in board:
-    env.Append(
-        CPPPATH=[
-            join(FRAMEWORK_DIR, "variants", variant),
-            join(CMSIS_DIR, "cores", "stm32"),
-            join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32F1xx", "Source", "Templates", "gcc" ),
-        ]
-    )
     libs.append(env.BuildLibrary(
         join("$BUILD_DIR", "FrameworkArduinoVariant"),
         join(FRAMEWORK_DIR, "variants", variant)
@@ -149,9 +172,12 @@ if "build.variant" in board:
 
 libs.append(env.BuildLibrary(
     join("$BUILD_DIR", "FrameworkArduino"),
-    join(FRAMEWORK_DIR, "cores", "arduino")
+    join(FRAMEWORK_DIR, "cores", "arduino"),
 ))
 
-print "******************** BUILD VARIANT: " + str(libs)
+#libs.append(env.BuildLibrary(
+#    join("$BUILD_DIR", "CMSIS_Dsp"),
+#    join(MBED_DIR, "features", "unsupported", "dsp", "cmsis_dsp")
+#))
 
 env.Prepend(LIBS=libs)
