@@ -19,8 +19,8 @@
     {
       "framework-arduinocorestm32": [
         {
-          "type": "git",
-          "url": "https://github.com/Redferne/Arduino_Core_STM32.git",
+          "url": "https://github.com/Redferne/Arduino_Core_STM32/archive/1.2.0-test.zip",
+          "version": "1.2.0-test",
           "system": "*"
         }
       ],
@@ -87,7 +87,7 @@
     "framework-arduinocorestm32": {
       "type": "framework",
       "optional": false,
-      "version": "~1.2.0"
+      "version": "~1.2.0-test"
     },
     "framework-arduinostm32mxchip": {
       "type": "framework",
