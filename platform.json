@@ -20,7 +20,7 @@
       "framework-arduinocorestm32": [
         {
           "url": "https://github.com/Redferne/Arduino_Core_STM32/archive/L476-changes.zip",
-          "version": "1.2.1-test",
+          "version": "1.4.1-test",
           "system": "*"
         }
       ],
@@ -87,7 +87,7 @@
     "framework-arduinocorestm32": {
       "type": "framework",
       "optional": false,
-      "version": "~1.2.1-test"
+      "version": "~1.4.1-test"
     },
     "framework-arduinostm32mxchip": {
       "type": "framework",
