@@ -3,7 +3,7 @@
   "title": "THE CORE STM32",
   "description": "The STM32 family of 32-bit Flash MCUs based on the ARM Cortex-M processor is designed to offer new degrees of freedom to MCU users. It offers a 32-bit product range that combines very high performance, real-time capabilities, digital signal processing, and low-power, low-voltage operation, while maintaining full integration and ease of development.",
   "url": "http://www.st.com/web/en/catalog/mmc/FM141/SC1169?sc=stm32",
-  "homepage": "http://platformio.org/platforms/",
+  "homepage": "http://platformio.org/platforms/ststm32",
   "license": "Apache-2.0",
   "engines": {
     "platformio": "^3.5.0"
@@ -12,15 +12,15 @@
     "type": "git",
     "url": "https://github.com/Redferne/platform-ststm32.git"
   },
-  "version": "4.3.1",
+  "version": "4.5.0",
   "packageRepositories": [
     "https://dl.bintray.com/platformio/dl-packages/manifest.json",
     "http://dl.platformio.org/packages/manifest.json",
     {
       "framework-arduinocorestm32": [
         {
-          "url": "https://github.com/Redferne/Arduino_Core_STM32/archive/1.2.0-test.zip",
-          "version": "1.2.0-test",
+          "url": "https://github.com/Redferne/Arduino_Core_STM32/archive/L476-changes.zip",
+          "version": "1.2.1-test",
           "system": "*"
         }
       ],
@@ -31,12 +31,12 @@
           "version": "5.3.0"
         }
       ]
-    }
+    }    
   ],
   "frameworks": {
     "mbed": {
       "package": "framework-mbed",
-      "script": "builder/frameworks/mbed/mbed.py"
+      "script": "builder/frameworks/mbed.py"
     },
     "cmsis": {
       "package": "framework-cmsis",
@@ -52,7 +52,7 @@
     },
     "arduino": {
       "package": "framework-arduinocorestm32",
-      "script": "builder/frameworks/arduino/stm32duino.py"
+      "script": "builder/frameworks/arduino.py"
     },
     "stm32cube": {
       "package": "framework-stm32cube",
@@ -66,13 +66,13 @@
     },
     "framework-mbed": {
       "type": "framework",
-      "optional": false,
-      "version": "~4.50806.0"
+      "optional": true,
+      "version": "~5.51001.1"
     },
     "framework-cmsis": {
       "type": "framework",
       "optional": false,
-      "version": "~1.40300.0"
+      "version": "~2.50400.181126"
     },
     "framework-spl": {
       "type": "framework",
@@ -87,7 +87,7 @@
     "framework-arduinocorestm32": {
       "type": "framework",
       "optional": false,
-      "version": "~1.2.0-test"
+      "version": "~1.2.1-test"
     },
     "framework-arduinostm32mxchip": {
       "type": "framework",
@@ -97,7 +97,7 @@
     "framework-stm32cube": {
       "type": "framework",
       "optional": true,
-      "version": "~1.2.0"
+      "version": "~2.0.181130"
     },
     "tool-stlink": {
       "type": "uploader",
@@ -113,6 +113,11 @@
       "type": "uploader",
       "optional": true,
       "version": "~1.1000.0"
+    },
+    "tool-jlink": {
+      "type": "uploader",
+      "optional": true,
+      "version": "^1.63208.0"
     }
   }
 }

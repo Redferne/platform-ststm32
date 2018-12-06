@@ -19,7 +19,7 @@ Arduino Wiring-based Framework allows writing cross-platform software to
 control devices attached to a wide range of Arduino boards to create all
 kinds of creative coding, interactive objects, spaces or physical experiences.
 
-http://www.stm32duino.com
+https://github.com/rogerclarkmelbourne/Arduino_STM32
 """
 
 from os.path import isdir, join
@@ -182,7 +182,7 @@ env.Append(
 
     LIBPATH=[join(FRAMEWORK_DIR, "variants", variant, "ld")],
 
-    LIBS=["c", "gcc", "m"]
+    LIBS=["c", "gcc", "m", "c"]
 )
 
 # copy CCFLAGS to ASFLAGS (-x assembler-with-cpp mode)

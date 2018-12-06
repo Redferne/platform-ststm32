@@ -59,6 +59,7 @@ else:
 mcu_with_fp = [
     "f429", "l496", "f302", "f303re",
     "f401", "f411", "f446", "l476",
+#    "f401", "f411", "f446",
     "l432", "f407", "f746", "l475"
 ]
 
@@ -143,7 +144,7 @@ env.Append(
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Class", "CDC", "Inc"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Class", "CDC", "Src"),
         join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", series, "Source", "Templates", "gcc" ),
-        join(CMSIS_DIR, "cores", "stm32"),
+        join(CMSIS_DIR, "CMSIS", "Core", "Include"),
         variant_dir
 #        join(MBED_DIR, "features", "unsupported", "dsp", "cmsis_dsp")
    ],
