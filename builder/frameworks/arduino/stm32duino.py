@@ -26,11 +26,11 @@ from SCons.Script import DefaultEnvironment
 
 env = DefaultEnvironment()
 
-if "stm32f1" in env.BoardConfig().get("build.variant"):
+if "stm32l4" in env.BoardConfig().get("build.mcu"):
+    env.SConscript("stm32lx.py")
+elif "stm32f1" in env.BoardConfig().get("build.variant"):
     env.SConscript("maple/stm32f1.py")
 elif "stm32f4" in env.BoardConfig().get("build.variant"):
     env.SConscript("maple/stm32f4.py")
-elif "stm32lx" in env.BoardConfig().get("build.variant"):
-    env.SConscript("stm32lx.py")
 elif "blue103c8" in env.BoardConfig().get("build.variant"):
     env.SConscript("blue103c8.py")

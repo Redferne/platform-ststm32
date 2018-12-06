@@ -25,6 +25,7 @@ http://www.stm32duino.com
 from os.path import isdir, join
 
 from SCons.Script import DefaultEnvironment
+from platformio import util
 
 env = DefaultEnvironment()
 platform = env.PioPlatform()
@@ -40,11 +41,9 @@ assert isdir(CMSIS_DIR)
 #assert isdir(MBED_DIR)
 
 # remap board configuration values
-# build.mcu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 mcu_type = board.get("build.mcu")[:-2]
-if "stm32l476rg" in mcu_type:
-    ldscript = "ldscript.ld"
-    variant = "ESSB_L476RG"
+variant = board.id.upper()
+series = mcu_type[:7].upper() + "xx"
 
 upload_protocol = env.subst("$UPLOAD_PROTOCOL")
 
@@ -53,6 +52,34 @@ vector_offset = 0x0
 if upload_protocol == "dfu":
     vector_offset = 0xc000
     ldscript = "ldscript_dfu.ld"
+else:
+    ldscript = "ldscript.ld"
+
+# mcus with a supprot for float point
+mcu_with_fp = [
+    "f429", "l496", "f302", "f303re",
+    "f401", "f411", "f446", "l476",
+    "l432", "f407", "f746", "l475"
+]
+
+if any(item in mcu_type for item in mcu_with_fp):
+    env.Append(
+        CCFLAGS=[
+            "-mfpu=fpv4-sp-d16",
+            "-mfloat-abi=hard"
+        ],
+
+        LINKFLAGS=[
+            "-mfpu=fpv4-sp-d16",
+            "-mfloat-abi=hard"
+        ]
+    )
+
+avd = util.get_project_optional_dir("arduino_variants_dir")
+variant_dir = join(FRAMEWORK_DIR, "variants", variant)
+
+if avd and isdir(join(avd, variant)):
+    variant_dir = join(avd, variant)
 
 env.Append(
     ASFLAGS=["-x", "assembler-with-cpp"],
@@ -60,6 +87,7 @@ env.Append(
     CFLAGS=[
         "-MMD",
         "-std=gnu11",
+#        "-Dprintf=iprintf"
         "-ffunction-sections",
         "-fdata-sections",
         "-nostdlib",
@@ -82,6 +110,7 @@ env.Append(
 
     CXXFLAGS=[
         "-std=gnu++14",
+        "-fno-threadsafe-statics",
         "-fno-rtti",
         "-fno-exceptions"
     ],
@@ -90,8 +119,8 @@ env.Append(
         ("ARDUINO_%s" % variant.upper()),
         ("DEBUG_LEVEL", "DEBUG_NONE"),
         ("ARDUINO_ARCH_STM32"),
-        ("STM32L476xx"),
-        ("STM32L4xx"),
+        ("BOARD_NAME", variant),
+        (series),
         ("VECT_TAB_OFFSET", vector_offset),
         ("BOARD_%s" % variant),
         ("ARDUINO", 10805),
@@ -104,32 +133,38 @@ env.Append(
         join(FRAMEWORK_DIR, "cores", "arduino"),
         join(FRAMEWORK_DIR, "cores", "arduino", "avr"),
         join(FRAMEWORK_DIR, "cores", "arduino", "stm32"),
-        join(FRAMEWORK_DIR, "system", "Drivers", "STM32L4xx_HAL_Driver", "Inc"),
-        join(FRAMEWORK_DIR, "system", "Drivers", "STM32L4xx_HAL_Driver", "Src"),
-        join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32L4xx", "Include"),
-        join(FRAMEWORK_DIR, "system", "STM32L4xx"),
-        join(FRAMEWORK_DIR, "variants", variant),
-        join(FRAMEWORK_DIR, "variants", variant, "usb"),
+        join(FRAMEWORK_DIR, "system", "Drivers", series + "_HAL_Driver", "Inc"),
+        join(FRAMEWORK_DIR, "system", "Drivers", series + "_HAL_Driver", "Src"),
+        join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", series, "Include"),
+        join(FRAMEWORK_DIR, "system", series),
+        join(FRAMEWORK_DIR, variant_dir, "usb"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Core", "Inc"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Core", "Src"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Class", "CDC", "Inc"),
         join(FRAMEWORK_DIR, "system", "Middlewares", "ST", "STM32_USB_Device_Library", "Class", "CDC", "Src"),
-        join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", "STM32L4xx", "Source", "Templates", "gcc" ),
+        join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS", "Device", "ST", series, "Source", "Templates", "gcc" ),
         join(CMSIS_DIR, "cores", "stm32"),
+        variant_dir
 #        join(MBED_DIR, "features", "unsupported", "dsp", "cmsis_dsp")
    ],
 
     LINKFLAGS=[
         "-Os",
         "-Wl,--gc-sections,--relax",
+        "-Wl,--check-sections",
+#        "-Wl,--entry=Reset_Handler",
+        "-Wl,--unresolved-symbols=report-all",
+        "-Wl,--warn-common",
+        "-Wl,--warn-section-align",
         "-mthumb",
         "-nostartfiles",
         "-nostdlib",
+        "-specs=nano.specs",
         "-specs=nosys.specs",
         "-mcpu=%s" % env.BoardConfig().get("build.cpu")
     ],
 
-    LIBPATH=[join(FRAMEWORK_DIR, "variants", variant)],
+    LIBPATH=[variant_dir],
 
     LIBS=["c"]
 )
@@ -156,7 +191,7 @@ for item in ("stdc++", "nosys"):
 
 env.Append(
     LIBSOURCE_DIRS=[
-#        join(FRAMEWORK_DIR, "libraries", "__cores__", "maple"),
+        join(FRAMEWORK_DIR, "libraries", "__cores__", "arduino"),
         join(FRAMEWORK_DIR, "libraries"),
     ]
 )
@@ -167,10 +202,13 @@ env.Append(
 
 libs = []
 
-if "build.variant" in board:
+if isdir(variant_dir):
+    env.Append(
+        CPPPATH=[variant_dir]
+    )
     libs.append(env.BuildLibrary(
         join("$BUILD_DIR", "FrameworkArduinoVariant"),
-        join(FRAMEWORK_DIR, "variants", variant)
+        variant_dir
     ))
 
 libs.append(env.BuildLibrary(
