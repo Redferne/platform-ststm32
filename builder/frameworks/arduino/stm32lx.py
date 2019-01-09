@@ -56,14 +56,15 @@ else:
     ldscript = "ldscript.ld"
 
 # mcus with a supprot for float point
-mcu_with_fp = [
-    "f429", "l496", "f302", "f303re",
-    "f401", "f411", "f446", "l476",
+#mcu_with_fp = [
+#    "f429", "l496", "f302", "f303re",
+#    "f401", "f411", "f446", "l476",
 #    "f401", "f411", "f446",
-    "l432", "f407", "f746", "l475"
-]
+#    "l432", "f407", "f746", "l475"
+#]
 
-if any(item in mcu_type for item in mcu_with_fp):
+#if any(item in mcu_type for item in mcu_with_fp):
+if any(mcu in board.get("build.cpu") for mcu in ("cortex-m4", "cortex-m7")):
     env.Append(
         CCFLAGS=[
             "-mfpu=fpv4-sp-d16",
@@ -135,6 +136,9 @@ env.Append(
         join(FRAMEWORK_DIR, "cores", "arduino", "avr"),
         join(FRAMEWORK_DIR, "cores", "arduino", "stm32"),
         join(FRAMEWORK_DIR, "cores", "arduino", "stm32", "LL"),
+        join(FRAMEWORK_DIR, "cores", "arduino", "stm32", "usb"),
+        join(FRAMEWORK_DIR, "cores", "arduino", "stm32", "usb", "cdc"),
+        join(FRAMEWORK_DIR, "cores", "arduino", "stm32", "usb", "hid"),
         join(FRAMEWORK_DIR, "system", "Drivers", series + "_HAL_Driver", "Inc"),
         join(FRAMEWORK_DIR, "system", "Drivers", series + "_HAL_Driver", "Src"),
         join(FRAMEWORK_DIR, "system", series),

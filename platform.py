@@ -30,19 +30,19 @@ class Corestm32Platform(PlatformBase):
             self.packages['toolchain-gccarmnoneeabi']['version'] = "~1.60301.0"
 
         # configure J-LINK tool
-        jlink_conds = [
-            "jlink" in variables.get(option, "")
-            for option in ("upload_protocol", "debug_tool")
-        ]
-        if variables.get("board"):
-            board_config = self.board_config(variables.get("board"))
-            jlink_conds.extend([
-                "jlink" in board_config.get(key, "")
-                for key in ("debug.default_tools", "upload.protocol")
-            ])
-        jlink_pkgname = "tool-jlink"
-        if not any(jlink_conds) and jlink_pkgname in self.packages:
-            del self.packages[jlink_pkgname]
+#        jlink_conds = [
+#            "jlink" in variables.get(option, "")
+#            for option in ("upload_protocol", "debug_tool")
+#        ]
+#        if variables.get("board"):
+#            board_config = self.board_config(variables.get("board"))
+#            jlink_conds.extend([
+#               "jlink" in board_config.get(key, "")
+#               for key in ("debug.default_tools", "upload.protocol")
+#            ])
+#        jlink_pkgname = "tool-jlink"
+#        if not any(jlink_conds) and jlink_pkgname in self.packages:
+#            del self.packages[jlink_pkgname]
 
         return PlatformBase.configure_default_packages(self, variables,
                                                        targets)
@@ -74,25 +74,25 @@ class Corestm32Platform(PlatformBase):
                     "hwids": [["0x1d50", "0x6018"]],
                     "require_debug_port": True
                 }
-            elif link == "jlink":
-                assert debug.get("jlink_device"), (
-                    "Missed J-Link Device ID for %s" % board.id)
-                debug['tools'][link] = {
-                    "server": {
-                        "package": "tool-jlink",
-                        "arguments": [
-                            "-singlerun",
-                            "-if", "SWD",
-                            "-select", "USB",
-                            "-device", debug.get("jlink_device"),
-                            "-port", "2331"
-                        ],
-                        "executable": ("JLinkGDBServerCL.exe"
-                                       if system() == "Windows" else
-                                       "JLinkGDBServer")
-                    },
-                    "onboard": link in debug.get("onboard_tools", [])
-                }
+#            elif link == "jlink":
+#                assert debug.get("jlink_device"), (
+#                    "Missed J-Link Device ID for %s" % board.id)
+#                debug['tools'][link] = {
+#                    "server": {
+#                        "package": "tool-jlink",
+#                        "arguments": [
+#                            "-singlerun",
+#                            "-if", "SWD",
+#                            "-select", "USB",
+#                            "-device", debug.get("jlink_device"),
+#                            "-port", "2331"
+#                        ],
+#                        "executable": ("JLinkGDBServerCL.exe"
+#                                       if system() == "Windows" else
+#                                       "JLinkGDBServer")
+#                    },
+#                    "onboard": link in debug.get("onboard_tools", [])
+#                }
             else:
                 server_args = []
                 if link in debug.get("onboard_tools",
