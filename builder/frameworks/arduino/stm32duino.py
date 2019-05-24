@@ -31,10 +31,13 @@ env = DefaultEnvironment()
 platform = env.PioPlatform()
 board = env.BoardConfig()
 
-FRAMEWORK_DIR = join(platform.get_package_dir(
-    "framework-arduinoststm32"), "STM32")
-CMSIS_DIR = join(platform.get_package_dir(
-    "framework-arduinoststm32"), "STM32", "CMSIS", "CMSIS")
+#FRAMEWORK_DIR = join(platform.get_package_dir(
+#    "framework-arduinocorestm32"), "STM32")
+#CMSIS_DIR = join(platform.get_package_dir(
+#    "framework-arduinocorestm32"), "STM32", "CMSIS", "CMSIS")
+FRAMEWORK_DIR = platform.get_package_dir("framework-arduinocorestm32")
+CMSIS_DIR = platform.get_package_dir("framework-cmsis")
+
 assert isdir(FRAMEWORK_DIR)
 assert isdir(CMSIS_DIR)
 
@@ -43,6 +46,10 @@ mcu_type = board.get("build.mcu")[:-2]
 variant = board.get("build.variant")
 series = mcu_type[:7].upper() + "xx"
 variant_dir = join(FRAMEWORK_DIR, "variants", variant)
+
+
+print("LINKFLAGS1 [%s]", env['LINKFLAGS'])
+
 
 if any(mcu in board.get("build.cpu") for mcu in ("cortex-m4", "cortex-m7")):
     env.Append(
@@ -61,7 +68,8 @@ env.Append(
     ASFLAGS=["-x", "assembler-with-cpp"],
 
     CFLAGS=[
-        "-std=gnu11"
+        "-std=gnu11",
+        "-nostdlib",
     ],
 
     CXXFLAGS=[
@@ -116,6 +124,7 @@ env.Append(
         join(FRAMEWORK_DIR, "system", "Drivers", "CMSIS",
              "Device", "ST", series, "Source", "Templates", "gcc"),
         join(FRAMEWORK_DIR, "cores", "arduino"),
+        join(CMSIS_DIR, "CMSIS", "Core", "Include"),
         variant_dir
     ],
 
@@ -123,7 +132,10 @@ env.Append(
         "-Os",
         "-mthumb",
         "-mcpu=%s" % env.BoardConfig().get("build.cpu"),
-        "--specs=nano.specs",
+        "-specs=nano.specs",
+        "-specs=nosys.specs",
+        "-nostartfiles",
+        "-nostdlib",
         "-Wl,--gc-sections,--relax",
         "-Wl,--check-sections",
         "-Wl,--entry=Reset_Handler",
@@ -133,15 +145,32 @@ env.Append(
     ],
 
     LIBS=[
-        "arm_cortex%sl_math" % board.get("build.cpu")[7:9].upper(),
-        "c", "m", "gcc", "stdc++", "c"  # two libc in order to fix linker error
+#        "arm_cortex%sl_math" % board.get("build.cpu")[7:9].upper(),
+#        "c", "m", "gcc", "stdc++", "c"  # two libc in order to fix linker error
+        "c"
     ],
 
     LIBPATH=[
         variant_dir,
-        join(CMSIS_DIR, "Lib", "GCC")
+#        join(CMSIS_DIR, "Lib", "GCC")
     ]
 )
+
+env.Replace(LINKFLAGS=[
+        "-Os",
+        "-mthumb",
+        "-mcpu=%s" % env.BoardConfig().get("build.cpu"),
+        "-specs=nano.specs",
+        "-specs=nosys.specs",
+        "-nostartfiles",
+        "-nostdlib",
+        "-Wl,--gc-sections,--relax",
+        "-Wl,--check-sections",
+        "-Wl,--entry=Reset_Handler",
+        "-Wl,--unresolved-symbols=report-all",
+        "-Wl,--warn-common",
+        "-Wl,--warn-section-align"
+    ])
 
 #
 # Configure Serial interface
@@ -174,6 +203,19 @@ env.Append(ASFLAGS=env.get("CCFLAGS", [])[:])
 
 # remap ldscript
 env.Replace(LDSCRIPT_PATH="ldscript.ld")
+
+print("LINKFLAGS2 [%s]", env['LINKFLAGS'])
+
+# remove unused linker flags
+for item in ("-nostartfiles", "-nostdlib"):
+    if item in env['LINKFLAGS']:
+        env['LINKFLAGS'].remove(item)
+
+# remove unused libraries
+for item in ("stdc++", "nosys"):
+    if item in env['LIBS']:
+        env['LIBS'].remove(item)
+
 
 env.Append(
     LIBSOURCE_DIRS=[

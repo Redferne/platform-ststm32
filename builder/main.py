@@ -195,13 +195,14 @@ elif upload_protocol in debug_tools:
     env.Replace(
         UPLOADER="openocd",
         UPLOADERFLAGS=["-s", platform.get_package_dir("tool-openocd") or ""] +
-        debug_tools.get(upload_protocol).get("server").get("arguments", []) +
-        ["-c",
-            "program {{$SOURCE}} %s verify reset; shutdown;" % env.BoardConfig().get(
-                "upload").get("flash_start", "")],
+        debug_tools.get(upload_protocol).get("server").get("arguments", []) + [
+            "-c",
+            "program {$SOURCE} %s verify reset; shutdown;" %
+            env.BoardConfig().get("upload.offset_address", "")
+        ],
         UPLOADCMD="$UPLOADER $UPLOADERFLAGS")
 
-    if not env.BoardConfig().get("upload").get("flash_start"):
+    if not env.BoardConfig().get("upload").get("offset_address"):
         upload_source = target_elf
     upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
 

@@ -33,18 +33,18 @@ build = env.BoardConfig().get("build")
 
 if 'variant' in build:
     core_variant_dir = join(env.PioPlatform().get_package_dir(
-        "framework-arduinoststm32"), "STM32", "variants")
+        "framework-arduinocorestm32"), "variants")
 
-    if variant in listdir(core_variant_dir):
+    if build['variant'] in listdir(core_variant_dir):
         env.SConscript("arduino/stm32duino.py")
 
 # Testing...
 if "stm32l4" in mcu:
     env.SConscript("arduino/stm32lx.py")
 # STM32 legacy core supported families
-elif "f1" in mcu:
-    env.SConscript("arduino/maple/stm32f1.py")
-elif "f4" in mcu:
-    env.SConscript("arduino/maple/stm32f4.py")
+#elif "f1" in mcu:
+#    env.SConscript("arduino/maple/stm32f1.py")
+#elif "f4" in mcu:
+#    env.SConscript("arduino/maple/stm32f4.py")
 else:
     env.SConscript("arduino/stm32duino.py")
