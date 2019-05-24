@@ -21,6 +21,14 @@ class Corestm32Platform(PlatformBase):
 
     def configure_default_packages(self, variables, targets):
         board = variables.get("board")
+        build_core = variables.get(
+            "board_build.core", self.board_config(variables.get("board")).get(
+                "build.core", "arduino"))
+
+        if "arduino" in variables.get("pioframework", []) and build_core == "maple":
+            self.frameworks['arduino']['package'] = "framework-arduinoststm32-maple"
+            self.packages["framework-arduinoststm32-maple"]["optional"] = False
+            self.packages["framework-arduinocorestm32"]["optional"] = True
 
         if board == "mxchip_az3166":
             self.frameworks['arduino'][
@@ -95,8 +103,7 @@ class Corestm32Platform(PlatformBase):
 #                }
             else:
                 server_args = []
-                if link in debug.get("onboard_tools",
-                                     []) and debug.get("openocd_board"):
+                if debug.get("openocd_board"):
                     server_args = [
                         "-f",
                         "scripts/board/%s.cfg" % debug.get("openocd_board")

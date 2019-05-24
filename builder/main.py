@@ -146,7 +146,13 @@ elif upload_protocol.startswith("blackmagic"):
 #        if not isdir(build_dir):
 #            makedirs(build_dir)
 #        script_path = join(build_dir, "upload.jlink")
-#        commands = ["h", "loadbin %s,0x0" % source, "r", "q"]
+#        commands = [
+#            "h",
+#            "loadbin %s, %s" % (source, env.BoardConfig().get(
+#                "upload.offset_address", "0x08000000")),
+#            "r",
+#            "q"
+#        ]
 #        with open(script_path, "w") as fp:
 #            fp.write("\n".join(commands))
 #        return script_path
@@ -164,8 +170,7 @@ elif upload_protocol.startswith("blackmagic"):
 #    )
 #    upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
 
-elif upload_protocol in ("serial", "dfu") \
-        and "arduino" in env.subst("$PIOFRAMEWORK"):
+elif upload_protocol in ("serial", "dfu"):
     _upload_tool = "serial_upload"
     _upload_flags = ["{upload.altID}", "{upload.usbID}"]
     if upload_protocol == "dfu":
@@ -177,8 +182,7 @@ elif upload_protocol in ("serial", "dfu") \
         ]
 
     def __configure_upload_port(env):
-        return (basename(env.subst("$UPLOAD_PORT"))
-                if _upload_tool == "maple_upload" else "$UPLOAD_PORT")
+        return basename(env.subst("$UPLOAD_PORT"))
 
     env.Replace(
         __configure_upload_port=__configure_upload_port,
@@ -197,7 +201,7 @@ elif upload_protocol in debug_tools:
         UPLOADERFLAGS=["-s", platform.get_package_dir("tool-openocd") or ""] +
         debug_tools.get(upload_protocol).get("server").get("arguments", []) + [
             "-c",
-            "program {$SOURCE} %s verify reset; shutdown;" %
+            "program {$SOURCE} verify reset %s; shutdown;" %
             env.BoardConfig().get("upload.offset_address", "")
         ],
         UPLOADCMD="$UPLOADER $UPLOADERFLAGS")
@@ -207,7 +211,7 @@ elif upload_protocol in debug_tools:
     upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
 
 # custom upload tool
-elif "UPLOADCMD" in env:
+elif upload_protocol == "custom":
     upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
 
 else:

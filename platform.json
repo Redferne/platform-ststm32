@@ -6,13 +6,13 @@
   "homepage": "http://platformio.org/platforms/ststm32",
   "license": "Apache-2.0",
   "engines": {
-    "platformio": "^3.5.0"
+    "platformio": "<5"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/Redferne/platform-ststm32.git"
   },
-  "version": "4.5.0",
+  "version": "5.4.1",
   "packageRepositories": [
     "https://dl.bintray.com/platformio/dl-packages/manifest.json",
     "http://dl.platformio.org/packages/manifest.json",
@@ -26,7 +26,7 @@
       ],
       "framework-cmsis5": [
         {
-          "url": "https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/tools/CMSIS-5.3.0.tar.bz2",
+          "url": "https://github.com/stm32duino/ArduinoModule-CMSIS/releases/download/5.3.0/CMSIS-5.3.0.tar.bz2",
           "system": "*",
           "version": "5.3.0"
         }
@@ -62,12 +62,12 @@
   "packages": {
     "toolchain-gccarmnoneeabi": {
       "type": "toolchain",
-      "version": ">=1.60301.0"
+      "version": ">=1.60301.0,<1.80000.0"
     },
     "framework-mbed": {
       "type": "framework",
       "optional": true,
-      "version": "~5.51001.1"
+      "version": "~5.51203.190509"
     },
     "framework-cmsis": {
       "type": "framework",
@@ -89,6 +89,11 @@
       "optional": false,
       "version": "~1.5.1-test"
     },
+    "framework-arduinoststm32-maple": {
+      "type": "framework",
+      "optional": true,
+      "version": "~1.10000.190516"
+    },
     "framework-arduinostm32mxchip": {
       "type": "framework",
       "optional": true,
@@ -107,12 +112,12 @@
     "tool-stm32duino": {
       "type": "uploader",
       "optional": true,
-      "version": "~1.0.0"
+      "version": "~1.0.1"
     },
     "tool-openocd": {
       "type": "uploader",
       "optional": true,
-      "version": "~1.1000.0"
+      "version": "~2.1000.0"
     },
     "tool-jlink": {
       "type": "uploader",
