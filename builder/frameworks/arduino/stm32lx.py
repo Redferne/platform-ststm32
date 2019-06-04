@@ -26,7 +26,7 @@ import sys
 from os.path import isfile, isdir, join
 
 from SCons.Script import DefaultEnvironment
-from platformio import util
+from platformio.project import helpers as util
 
 env = DefaultEnvironment()
 platform = env.PioPlatform()
