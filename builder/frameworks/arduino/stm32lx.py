@@ -26,11 +26,13 @@ import sys
 from os.path import isfile, isdir, join
 
 from SCons.Script import DefaultEnvironment
-from platformio.project import helpers as util
+#from platformio.project import helpers
+from platformio.project.helpers import get_project_dir
 
 env = DefaultEnvironment()
 platform = env.PioPlatform()
 board = env.BoardConfig()
+config = env.GetProjectConfig()
 
 FRAMEWORK_DIR = platform.get_package_dir("framework-arduinocorestm32")
 #CMSIS_DIR = join(platform.get_package_dir(
@@ -38,6 +40,7 @@ FRAMEWORK_DIR = platform.get_package_dir("framework-arduinocorestm32")
 CMSIS_DIR = platform.get_package_dir("framework-cmsis")
 assert isdir(FRAMEWORK_DIR)
 assert isdir(CMSIS_DIR)
+
 
 
 #variant = board.id.upper()
@@ -105,11 +108,12 @@ if any(mcu in board.get("build.cpu") for mcu in ("cortex-m4", "cortex-m7")):
         ]
     )
 
-avd = util.get_project_optional_dir("arduino_variants_dir")
+#avd = config.get_optional_dir("variants")
+#avd = util.get_project_optional_dir("arduino_variants_dir")
 variant_dir = join(FRAMEWORK_DIR, "variants", variant)
 
-if avd and isdir(join(avd, variant)):
-    variant_dir = join(avd, variant)
+#if avd and isdir(join(avd, variant)):
+#    variant_dir = join(avd, variant)
 
 env.Append(
     ASFLAGS=["-x", "assembler-with-cpp"],
